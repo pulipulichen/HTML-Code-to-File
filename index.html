@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas 檔案匯出工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自訂捲軸樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-blue-200 selection:text-blue-900">
+
+    <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- 標頭 -->
+        <header class="mb-8 text-center sm:text-left">
+            <h1 class="text-3xl font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                智慧檔案匯出工具
+            </h1>
+            <p class="text-slate-500 mt-2">貼上從 Canvas 取得的程式碼或文字內容，系統將自動分析並為您產生適合的檔名。</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            
+            <!-- 左側：內容輸入區 -->
+            <div class="lg:col-span-2 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-100 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
+                    <span class="text-sm font-medium text-slate-600">檔案內容 (貼上於此)</span>
+                    <button id="clearBtn" class="text-xs text-slate-500 hover:text-red-600 transition-colors flex items-center gap-1 hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        清空
+                    </button>
+                </div>
+                <textarea id="contentInput" 
+                    class="w-full flex-grow min-h-[400px] p-4 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
+                    placeholder="請在此貼上 HTML、Markdown、JSON 或任何程式碼..."></textarea>
+            </div>
+
+            <!-- 右側：設定與下載區 -->
+            <div class="flex flex-col gap-6">
+                <!-- 分析結果卡片 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">檔案設定</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">自動偵測格式</label>
+                            <div id="detectedType" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200">
+                                尚未偵測
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="filenameInput" class="block text-xs font-medium text-slate-500 mb-1">儲存檔名 (可自行修改)</label>
+                            <div class="relative">
+                                <input type="text" id="filenameInput" 
+                                    class="w-full pl-3 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono transition-shadow bg-slate-50 hover:bg-white" 
+                                    placeholder="untitled.txt" disabled>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1.5" id="autoUpdateHint">輸入內容後將自動產生檔名</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 下載按鈕區塊 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-grow flex flex-col justify-end">
+                    <button id="downloadBtn" disabled
+                        class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all active:scale-[0.98]">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        下載檔案
+                    </button>
+                    <p class="text-xs text-center text-slate-500 mt-3">所有處理皆在您的瀏覽器中完成，不會上傳任何資料。</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentInput = document.getElementById('contentInput');
+            const filenameInput = document.getElementById('filenameInput');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const detectedTypeEl = document.getElementById('detectedType');
+            const autoUpdateHint = document.getElementById('autoUpdateHint');
+
+            let isUserEditedFilename = false;
+
+            // 監聽檔名輸入框，如果使用者自己改了，就不再自動覆蓋，除非清空內容
+            filenameInput.addEventListener('input', () => {
+                isUserEditedFilename = true;
+                autoUpdateHint.textContent = "已鎖定手動修改的檔名";
+                autoUpdateHint.classList.add('text-amber-500');
+            });
+
+            // 清空按鈕邏輯
+            clearBtn.addEventListener('click', () => {
+                contentInput.value = '';
+                contentInput.dispatchEvent(new Event('input'));
+            });
+
+            // 核心邏輯：分析內容並產生檔名
+            contentInput.addEventListener('input', () => {
+                const content = contentInput.value;
+                const isEmpty = content.trim() === '';
+                
+                downloadBtn.disabled = isEmpty;
+                filenameInput.disabled = isEmpty;
+                
+                if (isEmpty) {
+                    clearBtn.classList.add('hidden');
+                    filenameInput.value = '';
+                    detectedTypeEl.textContent = '尚未偵測';
+                    detectedTypeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200';
+                    isUserEditedFilename = false;
+                    autoUpdateHint.textContent = "輸入內容後將自動產生檔名";
+                    autoUpdateHint.classList.remove('text-amber-500');
+                    return;
+                }
+
+                clearBtn.classList.remove('hidden');
+
+                if (isUserEditedFilename) return; // 如果使用者已經自訂檔名，不自動覆蓋
+
+                // 只取前 5000 個字元進行分析，避免大型檔案造成瀏覽器卡頓
+                const headContent = content.substring(0, 5000);
+                
+                let ext = 'txt';
+                let baseName = 'canvas-export';
+                let typeLabel = '純文字 (TXT)';
+                let typeColor = 'bg-slate-100 text-slate-700 border-slate-200';
+
+                // 1. 判斷是否為 HTML
+                if (/<html/i.test(headContent) || /<!doctype html>/i.test(headContent) || (/<body/i.test(headContent) && /<div/i.test(headContent))) {
+                    ext = 'html';
+                    typeLabel = '網頁 (HTML)';
+                    typeColor = 'bg-orange-100 text-orange-700 border-orange-200';
+                    
+                    // 擷取 <title>
+                    const titleMatch = headContent.match(/<title[^>]*>([^<]+)<\/title>/i);
+                    // 擷取 <h1>
+                    const h1Match = headContent.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+
+                    if (titleMatch && titleMatch[1].trim()) {
+                        baseName = titleMatch[1].trim();
+                    } else if (h1Match && h1Match[1].trim()) {
+                        baseName = h1Match[1].trim();
+                    } else {
+                        baseName = 'webpage';
+                    }
+                }
+                // 2. 判斷是否為 JSON
+                else if (headContent.trim().startsWith('{') || headContent.trim().startsWith('[')) {
+                    try {
+                        JSON.parse(content); // 對完整內容測試
+                        ext = 'json';
+                        baseName = 'data';
+                        typeLabel = '資料 (JSON)';
+                        typeColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
+                    } catch (e) {
+                        // 不是有效的 JSON，繼續其他判斷
+                    }
+                }
+                // 3. 判斷是否為 Markdown (標題開頭)
+                else if (/^#\s+(.*)/m.test(headContent)) {
+                    ext = 'md';
+                    typeLabel = 'Markdown (MD)';
+                    typeColor = 'bg-blue-100 text-blue-700 border-blue-200';
+                    
+                    const mdMatch = headContent.match(/^#\s+(.*)/m);
+                    if (mdMatch && mdMatch[1].trim()) {
+                        baseName = mdMatch[1].trim();
+                    }
+                }
+                // 4. 判斷是否為 CSS
+                else if (/(?:body|html|div|span|\.[a-z0-9_-]+|#[a-z0-9_-]+)\s*\{/i.test(headContent) && !/<html/i.test(headContent)) {
+                    ext = 'css';
+                    baseName = 'style';
+                    typeLabel = '樣式表 (CSS)';
+                    typeColor = 'bg-indigo-100 text-indigo-700 border-indigo-200';
+                }
+                // 5. 判斷是否為 JavaScript (簡單判斷)
+                else if (/(?:const|let|var|function|import|export)\s+/i.test(headContent) && !/<html/i.test(headContent)) {
+                    ext = 'js';
+                    baseName = 'script';
+                    typeLabel = 'JavaScript (JS)';
+                    typeColor = 'bg-yellow-100 text-yellow-800 border-yellow-300';
+                }
+
+                // 更新標籤顯示
+                detectedTypeEl.textContent = typeLabel;
+                detectedTypeEl.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-medium border transition-colors ${typeColor}`;
+
+                // 清理檔名 (移除不合法的字元)
+                baseName = baseName.replace(/[\\/:*?"<>|]/g, '-').trim();
+                if (baseName.length > 40) baseName = baseName.substring(0, 40); // 限制長度
+
+                // 產生時間戳記 YYYYMMDD-HHmmSS
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const MM = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const HH = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                const timestamp = `${yyyy}${MM}${dd}-${HH}${mm}${ss}`;
+
+                // 組合最終檔名
+                filenameInput.value = `${baseName}_${timestamp}.${ext}`;
+            });
+
+            // 下載功能
+            downloadBtn.addEventListener('click', () => {
+                const content = contentInput.value;
+                if (!content) return;
+
+                const filename = filenameInput.value.trim() || 'untitled.txt';
+                
+                // 建立 Blob 物件
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                // 建立隱藏的 a 標籤來觸發下載
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 清理
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+
+                // 給予一點視覺回饋
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 下載成功！`;
+                downloadBtn.classList.replace('bg-blue-600', 'bg-green-600');
+                downloadBtn.classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+                
+                setTimeout(() => {
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.classList.replace('bg-green-600', 'bg-blue-600');
+                    downloadBtn.classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
