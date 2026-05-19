@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京華城案時空軌跡與苗博雅預警焦點 - 互動 Canvas 時間軸</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons in HTML elements -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f1f5f9;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider">苗博雅質詢預警焦點</span>
+                    <span class="text-slate-400 text-xs">臺北地院 113 年度金訴字第 51 號判決分析</span>
+                </div>
+                <h1 class="text-2xl font-black tracking-tight mt-1 text-transparent bg-clip-text bg-gradient-to-r from-slate-100 via-amber-200 to-amber-400">
+                    京華城圖利弊案時空軌跡與焦點預警時間軸
+                </h1>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-slate-400">
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block animate-ping"></span> 點擊節點看判決細節</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-8">
+        
+        <!-- Summary Dashboard Card -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">圖利弊端核心</div>
+                <div class="text-xl font-bold text-red-400 mt-1">20% 違法容積獎勵</div>
+                <p class="text-slate-500 text-xs mt-1">準用都更條例與危老重建，無法律依據之「方案四」。</p>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">不法獲利估值</div>
+                <div class="text-xl font-bold text-amber-400 mt-1">約 121 億 545 萬元</div>
+                <p class="text-slate-500 text-xs mt-1">核算多得 18,463.2㎡ 容積樓地板面積利益。</p>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">苗博雅關鍵質詢</div>
+                <div class="text-xl font-bold text-cyan-400 mt-1">110年11月11日</div>
+                <p class="text-slate-500 text-xs mt-1">當面指出自創容獎毫無依據，精確預言圖利疑慮。</p>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">一審核心宣告</div>
+                <div class="text-xl font-bold text-emerald-400 mt-1">柯文哲應執行17年</div>
+                <p class="text-slate-500 text-xs mt-1">判犯收賄罪（13年）與公益侵占罪、背信罪。</p>
+            </div>
+        </div>
+
+        <!-- Timeline Interactive System -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Category Filter Sidebar (For User Quick Access) -->
+            <div class="lg:col-span-3 space-y-4">
+                <div class="bg-slate-950/60 border border-slate-800 p-5 rounded-2xl space-y-4">
+                    <h3 class="font-bold text-sm tracking-wider text-slate-300 uppercase">圖表篩選分類</h3>
+                    <div class="space-y-2" id="filter-group">
+                        <button onclick="filterCategory('all')" class="w-full text-left px-3 py-2 rounded-lg bg-slate-800 text-slate-100 text-xs font-semibold flex items-center justify-between border border-slate-700 transition" id="btn-all">
+                            <span>顯示全部事件</span>
+                            <span class="bg-slate-900 px-2 py-0.5 rounded text-[10px]" id="count-all">15</span>
+                        </button>
+                        <button onclick="filterCategory('spotlight')" class="w-full text-left px-3 py-2 rounded-lg bg-slate-900 text-slate-400 hover:bg-slate-800/50 hover:text-amber-300 text-xs flex items-center justify-between border border-transparent transition" id="btn-spotlight">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> 苗博雅焦點預警</span>
+                            <span class="bg-slate-950 px-2 py-0.5 rounded text-[10px]" id="count-spotlight">1</span>
+                        </button>
+                        <button onclick="filterCategory('admin')" class="w-full text-left px-3 py-2 rounded-lg bg-slate-900 text-slate-400 hover:bg-slate-800/50 hover:text-sky-300 text-xs flex items-center justify-between border border-transparent transition" id="btn-admin">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-user-tie text-sky-400"></i> 行政交辦與PM指派</span>
+                            <span class="bg-slate-950 px-2 py-0.5 rounded text-[10px]" id="count-admin">8</span>
+                        </button>
+                        <button onclick="filterCategory('legal')" class="w-full text-left px-3 py-2 rounded-lg bg-slate-900 text-slate-400 hover:bg-slate-800/50 hover:text-emerald-300 text-xs flex items-center justify-between border border-transparent transition" id="btn-legal">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-emerald-400"></i> 行政訴訟與糾正</span>
+                            <span class="bg-slate-950 px-2 py-0.5 rounded text-[10px]" id="count-legal">4</span>
+                        </button>
+                        <button onclick="filterCategory('money')" class="w-full text-left px-3 py-2 rounded-lg bg-slate-900 text-slate-400 hover:bg-slate-800/50 hover:text-red-300 text-xs flex items-center justify-between border border-transparent transition" id="btn-money">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-sack-dollar text-red-400"></i> 金流與對價行收賄</span>
+                            <span class="bg-slate-950 px-2 py-0.5 rounded text-[10px]" id="count-money">2</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800/80 p-5 rounded-2xl">
+                    <h4 class="font-bold text-xs text-slate-400 mb-2">💡 互動指引</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        左側的 Canvas 畫布是一個即時渲染的向量時間軸。您可以將滑鼠移動到任何圓點上，指標將變成手形。點擊特定節點即可在右側檢視最詳盡的判決書事實比對與解析。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-3">
+                    <span class="text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-nodes text-indigo-400"></i> HTML5 Canvas 即時繪製
+                    </span>
+                    <button onclick="resetCanvasView()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded transition">
+                        重設檢視
+                    </button>
+                </div>
+                <!-- Interactive Canvas Element -->
+                <div class="relative w-full overflow-hidden bg-slate-950 border border-slate-900 rounded-xl" style="height: 700px;">
+                    <canvas id="timelineCanvas" class="absolute top-0 left-0 w-full h-full cursor-default"></canvas>
+                </div>
+            </div>
+
+            <!-- Selected Event Details Inspector -->
+            <div class="lg:col-span-4 bg-slate-900/40 border border-slate-800 rounded-2xl p-6 min-h-[700px] flex flex-col" id="inspector-panel">
+                <div class="flex-1 flex flex-col justify-center items-center text-center p-8 space-y-4" id="inspector-placeholder">
+                    <div class="w-16 h-16 rounded-full bg-slate-850 border border-slate-800 flex items-center justify-center text-slate-500 text-xl animate-pulse">
+                        <i class="fa-solid fa-fingerprint"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-slate-300 font-bold text-sm">請選擇一個時間軌跡點</h4>
+                        <p class="text-slate-500 text-xs mt-1">點擊左側 Canvas 上的節點，深入檢視臺北地院判決對應事實</p>
+                    </div>
+                </div>
+
+                <div class="hidden flex-col h-full space-y-4" id="inspector-content">
+                    <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+                        <div>
+                            <span id="ins-date" class="text-xs font-black tracking-widest text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded">2021-11-11</span>
+                            <div id="ins-cat" class="mt-2 inline-block text-[10px] font-bold px-2 py-0.5 rounded">苗博雅質詢焦點</div>
+                        </div>
+                        <span id="ins-actor-tag" class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded">柯文哲、苗博雅</span>
+                    </div>
+
+                    <div class="space-y-4 flex-1 overflow-y-auto pr-1">
+                        <div>
+                            <h3 id="ins-title" class="text-lg font-black text-amber-300 leading-snug">
+                                苗博雅市政總質詢：警告非都更新創容獎不合法
+                            </h3>
+                        </div>
+
+                        <div class="bg-slate-950/80 border border-slate-850 p-4 rounded-xl space-y-2">
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-indigo-400 block"><i class="fa-solid fa-quote-left"></i> 判決書認定事實摘要</span>
+                            <p id="ins-desc" class="text-xs text-slate-300 leading-relaxed">
+                                議員苗博雅質詢柯文哲，直指京華城案給予「韌性城市、智慧城市、宜居城市」20%獎勵毫無法律依據，警告柯文哲有嚴重違法圖利之重大嫌疑。但柯文哲知悉後仍容任該計畫續行推進。
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-amber-500 block"><i class="fa-solid fa-circle-info"></i> 核心圖利手法與影響</span>
+                            <p id="ins-detail" class="text-xs text-slate-400 leading-relaxed">
+                                這項質詢在判決中被視為「柯文哲主觀上明知不合法」的重要呈堂證供。因為身為市長，在有議員明確且詳細點出適法性爭議後，非但沒有依職權撤銷或重啟內部法制評估，反而加速其公告與核定。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 mt-auto flex items-center justify-between text-[11px] text-slate-500">
+                        <span>判決書章節對應：</span>
+                        <strong id="ins-reference" class="text-slate-400">事實欄 壹、二、㈣</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sources Section Title -->
+        <div class="border-t border-slate-800 pt-8">
+            <h2 class="text-xl font-bold text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-database text-amber-400"></i> 法院判決書資料來源與證據描述對照表
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">
+                本數據皆提煉自《臺灣臺北地方法院 113 年度金訴字第 51 號刑事判決書》事實欄，客觀反映司法事實。
+            </p>
+        </div>
+
+        <!-- Sources Data Table -->
+        <div class="overflow-x-auto bg-slate-950 border border-slate-800 rounded-xl">
+            <table class="w-full text-left text-xs text-slate-400">
+                <thead class="bg-slate-900 text-slate-200 font-bold uppercase tracking-wider border-b border-slate-800">
+                    <tr>
+                        <th class="p-4 w-12 text-center">序</th>
+                        <th class="p-4 w-28">關鍵時間</th>
+                        <th class="p-4 w-44">判決認定訴訟事實 / 行政行為</th>
+                        <th class="p-4 w-36">涉案關鍵人物</th>
+                        <th class="p-4">判決書事實認定及證據描述欄位</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    <!-- Event 1 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">1</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">1991-02-13</td>
+                        <td class="p-4">北市府公告80年計畫案。變更工業區為第三種商業區，約定基準容積率392%（捐地30%後，剩餘70%土地基準容積率折算為560%）。</td>
+                        <td class="p-4">臺北市政府、威京集團</td>
+                        <td class="p-4 text-slate-400">「壹、一、㈦、⒉」：載明應捐地30%，由威京公司整體開發，容積率依基地面積折算為392%，奠定歷史基準。</td>
+                    </tr>
+                    <!-- Event 2 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">2</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">2014-05-13</td>
+                        <td class="p-4">北市府公告103年細部計畫。因威京長年怠於履行整體開發義務，北市府刪除整體開發限制，改採分區開發。</td>
+                        <td class="p-4">臺北市政府、沈慶京</td>
+                        <td class="p-4 text-slate-400">「壹、一、㈦、⒊」：刪除「本案開發由威京整體開發」等字。威京不服提起上訴，歷經多次駁回終告敗訴。</td>
+                    </tr>
+                    <!-- Event 3 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">3</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">2016-01-12</td>
+                        <td class="p-4">監察院針對基準容積率糾正北市府，認定捐地後剩餘70%土地基準容積率應以560%為計算基礎較為合理。</td>
+                        <td class="p-4">監察院、都發局</td>
+                        <td class="p-4 text-slate-400">「壹、一、㈦、⒋、⑴」：監察院提出105內正0005糾正案，指基準容積以560%計算較為合理，引發後續爭議。</td>
+                    </tr>
+                    <!-- Event 4 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">4</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">2018-01-18</td>
+                        <td class="p-4">北市府核定107年細部計畫，刪除「允建樓地板面積得不低於120,284.39㎡」字樣，京華城不服，提起行政訴訟。</td>
+                        <td class="p-4">林欽榮、都發局</td>
+                        <td class="p-4 text-slate-400">「壹、一、㈦、⒋、⑷」與「⒌」：載明12萬多平方公尺保障為一次性，改建應回歸基準容積560%管制。</td>
+                    </tr>
+                    <!-- Event 5 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">5</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">2020-03-10</td>
+                        <td class="p-4">柯文哲與應曉薇舉行「便當會」。柯文哲明知訴訟進行中，仍當場裁示「訴求方案函送都發局，提市都委會研議」。</td>
+                        <td class="p-4">柯文哲、應曉薇、黃景茂</td>
+                        <td class="p-4 text-slate-400">「壹、二、㈠、⒊」：便當會中應曉薇提出京華城容積案。柯文哲批示「速審速決」，涉違背陳情注意事項。</td>
+                    </tr>
+                    <!-- Event 6 -->
+                    <tr class="hover:bg-slate-900/30 transition bg-amber-950/20">
+                        <td class="p-4 text-center text-amber-500">6</td>
+                        <td class="p-4 font-mono font-bold text-amber-400">2021-11-11</td>
+                        <td class="p-4 font-semibold text-slate-200">臺北市議員苗博雅於市政總質詢，當面指出本案不符都更及危老、平白創設20%容積獎勵「毫無法律依據」，柯文哲仍強行推進。</td>
+                        <td class="p-4 text-slate-300">苗博雅、柯文哲</td>
+                        <td class="p-4 text-slate-300">「壹、二、㈣」：質詢明指韌性、智慧、宜居城市等容獎無法律依據，柯文哲明確收到警告卻刻意不處理、容任推進。</td>
+                    </tr>
+                    <!-- Event 7 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">7</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">2021-11-19</td>
+                        <td class="p-4">沈慶京以威京主席身分親簽核可，將不法賄款4,500萬以公司支票假借捐款形式，存入應曉薇實質掌控之5個協會洗錢。</td>
+                        <td class="p-4">沈慶京、應曉薇、王尊侃</td>
+                        <td class="p-4 text-slate-400">「壹、三、㈠、⒎、⑵」：沈慶京透過旗下蓁輝、京華租賃等公司支票，交付4,500萬元賄款，並經陳佳敏提現洗錢。</td>
+                    </tr>
+                    <!-- Event 8 -->
+                    <tr class="hover:bg-slate-900/30 transition">
+                        <td class="p-4 text-center text-slate-500">8</td>
+                        <td class="p-4 font-mono font-bold text-slate-300">2022-10-18</td>
+                        <td class="p-4">鼎越公司正式取得建造執照，獲取20%不法容積獎勵利益，不法獲得18,463.2㎡（5,585容積坪），價值121億餘元。</td>
+                        <td class="p-4">鼎越開發、沈慶京</td>
+                        <td class="p-4 text-slate-400">「壹、二、㈤」：核發111年建字第9999號建照，總容積率達672%，共同圖利並使鼎越取得121億545萬元不法利益。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="text-center text-slate-600 text-[11px] pt-4 pb-8 space-y-1">
+            <p>© 2026 互動司法數據可視化平台 - 京華城圖利案研究分析專題</p>
+            <p>判決原文引自：臺灣臺北地方法院刑事判決 113年度金訴字第51號。本站不代表司法機關立場。</p>
+        </footer>
+
+    </main>
+
+    <!-- Canvas Interactivity Logic -->
+    <script>
+        // Full Dataset Extracted from the Court Document
+        const events = [
+            { 
+                date: "1991-02-13", 
+                title: "北市府80年都市計畫公告", 
+                cat: "legal", 
+                desc: "變更工業區為第三種商業區。約定基準容積率為392%，若捐地30%後剩餘70%之商業區土地容積率為560%。", 
+                actor: "北市府、威京集團", 
+                detail: "奠定了京華城土地開發的初始分區與容積率起點。也是日後京華城一再糾結的歷史容積爭議基礎。",
+                ref: "事實欄 壹、一、㈦、⒉"
+            },
+            { 
+                date: "2014-05-13", 
+                title: "北市府103年細部計畫公告", 
+                cat: "legal", 
+                desc: "因威京怠於履行「整體開發」義務，北市府辦理計畫變更，刪除原整體開發之規定，改採「分區開發」。", 
+                actor: "北市府、沈慶京", 
+                detail: "威京集團對此表示不服，提起長達數年的訴願與行政訴訟，但在110年均遭高等行政法院與最高行政法院判決確定敗訴。",
+                ref: "事實欄 壹、一、㈦、⒊"
+            },
+            { 
+                date: "2016-01-12", 
+                title: "監察院對北市府提出糾正案", 
+                cat: "legal", 
+                desc: "監察院認定基準容積率扣除捐地後，應以560%為計算基礎較舊計畫之392%合理，要求北市府檢討改善。", 
+                actor: "監察院、都發局", 
+                detail: "監察院此糾正案（105內正0005糾正案）成為後來京華城強烈訴求提高基準容積率至560%的最核心保護傘。",
+                ref: "事實欄 壹、一、㈦、⒋、⑴"
+            },
+            { 
+                date: "2018-01-18", 
+                title: "北市府核定107年細部計畫", 
+                cat: "legal", 
+                desc: "核定基準容積率為560%，但刪除「保障12萬平方公尺樓地板面積」字樣，京華城不服，提起行政訴訟。", 
+                actor: "林欽榮、都發局", 
+                detail: "時任副市長林欽榮書面明確向柯文哲回報：『12萬平方公尺保障為一次性，倘未來改建應回歸560%管制，原訴求依法無據。』",
+                ref: "事實欄 壹、一、㈦、⒋、⑷"
+            },
+            { 
+                date: "2020-03-10", 
+                title: "柯文哲與應曉薇舉行「便當會」", 
+                cat: "admin", 
+                desc: "應曉薇提出「京華城容積爭議案」。柯文哲當場裁示「速審速決」送都委會研議。", 
+                actor: "柯文哲、應曉薇、黃景茂", 
+                detail: "即使都發局承辦人多次呈上簽呈（包含109年2月24日兩次簽呈）提醒有圖利疑慮且訴訟進行中，仍執意決意送都委會研議。",
+                ref: "事實欄 壹、二、㈠、⒊"
+            },
+            { 
+                date: "2020-03-24", 
+                title: "假獻金真行賄（首波210萬匯入）", 
+                cat: "money", 
+                desc: "朱亞虎、張志澄等7人，各領30萬現金後以政治獻金名義匯入民眾黨專戶，製造政治獻金假象。", 
+                actor: "沈慶京、朱亞虎、柯文哲", 
+                detail: "判決書認定此筆210萬元在密接時點匯入，為行收賄之「默示合意」對價，意在使柯文哲將訴訟案送交都委會研議。",
+                ref: "事實欄 壹、二、㈠、⒋"
+            },
+            { 
+                date: "2020-07-16", 
+                title: "行政法院判決京華城公司敗訴", 
+                cat: "legal", 
+                desc: "臺北高等行政法院判決認定：12萬樓地板面積是一次性保障，重建時北市府依560%管制屬依法行政。", 
+                actor: "臺北高等行政法院", 
+                detail: "法院正式關閉了京華城在訴訟上索取高額容積的捷徑。但此時北市府仍為其持續護航，尋求訴訟外的「補救方案」。",
+                ref: "事實欄 壹、二、㈡、⒋"
+            },
+            { 
+                date: "2020-07-30", 
+                title: "都委會768次會議 催生方案四", 
+                cat: "admin", 
+                desc: "都委會召開會議。在彭振聲、邵琇珮引導下，尊重京華城提出之「方案四」準用都更創設20%容獎。", 
+                actor: "彭振聲、邵琇珮、京華城", 
+                detail: "曾光宗等多位委員當場強烈反對，指出既然行政訴訟已判駁回，市府完全無須也不應該給予任何「補救方案」。",
+                ref: "事實欄 壹、二、㈡、⒌"
+            },
+            { 
+                date: "2020-11-11", 
+                title: "柯文哲核決公展 掃除李得全反對", 
+                cat: "admin", 
+                desc: "不顧副秘書長李得全在簽呈上「本案與全市一致性土管規定不符、有適法性疑慮」之警示，決行公展。", 
+                actor: "柯文哲、李得全、彭振聲", 
+                detail: "在威京集團密友在北市府樓下施壓下，柯文哲親自核章，將不合法的公展版細部計畫送入30天公開展覽程序。",
+                ref: "事實欄 壹、二、㈡、⒓"
+            },
+            { 
+                date: "2021-04-21", 
+                title: "便當會：柯文哲指定都發局擔任PM", 
+                cat: "admin", 
+                desc: "柯文哲與應曉薇座談後，裁示「請都發局擔任PM，俟送件後儘速積極協助辦理，並向議員說明進度」。", 
+                actor: "柯文哲、應曉薇、都發局", 
+                detail: "此舉破壞行政機關依法行政與行政中立之義務。柯文哲公然將市府公權力降格為財團的「專案經理人（PM）」。",
+                ref: "事實欄 壹、二、㈢、⒋"
+            },
+            { 
+                date: "2021-08-10", 
+                title: "便當會：指派彭振聲擔任PM", 
+                cat: "admin", 
+                desc: "因都委會執祕劉秀玲堅守立場遭京華城指責「阻撓」，柯文哲裁示「請彭副市長擔任PM，迅速送大會審議」。", 
+                actor: "柯文哲、應曉薇、彭振聲", 
+                detail: "劉秀玲因依法行政承受巨大政治壓力，隨後彭振聲「球員兼裁判」兼任專案經理，直接主導大會审理方向。",
+                ref: "事實欄 壹、二 toughness、㈤"
+            },
+            { 
+                date: "2021-09-09", 
+                title: "都委會783次會議 強行通過20%容獎", 
+                cat: "admin", 
+                desc: "彭振聲主持會議，無視薛昭信委員等質疑公益性與適法性，決議通過「方案四」20%容積獎勵。", 
+                actor: "彭振聲、沈慶京", 
+                detail: "正式違法核給「韌性城市、智慧城市、宜居城市」20%容積獎勵，使容積率從560%突破上限暴增至672%。",
+                ref: "事實欄 壹、二、㈢、⒍"
+            },
+            { 
+                date: "2021-11-11", 
+                title: "重要預警：苗博雅議員市政總質詢", 
+                cat: "spotlight", 
+                desc: "苗博雅當面指摘柯文哲：京華城案非都更非危老，平白核給20%容積獎勵「毫無法律依據」！", 
+                actor: "苗博雅、柯文哲", 
+                detail: "苗博雅明確指出「都市計畫法第24條非給予容獎之依據，都委會無權自創容獎項目」，警告此案有違法圖利重大疑慮。詎柯文哲更清楚確信違法後，仍不予處理、繼續推進。",
+                ref: "事實欄 壹、二、㈣"
+            },
+            { 
+                date: "2021-11-19", 
+                title: "行賄金流（4,500萬元）到期匯入", 
+                cat: "money", 
+                desc: "沈慶京親筆核可開立旗下蓁輝、京華租賃等公司支票，共4,500萬存入應曉薇實際掌控之5個協會洗錢。", 
+                actor: "沈慶京、應曉薇、王尊侃", 
+                detail: "此筆鉅款隨即在110年11月22日全數兌現入帳，應曉薇指揮助理陳佳敏提領大量現金償還私人貸款、刷卡與出國使用，製造金流斷點。",
+                ref: "事實欄 壹、三、㈠、⒎"
+            },
+            { 
+                date: "2022-10-18", 
+                title: "鼎越公司順利取得建造執照", 
+                cat: "legal", 
+                desc: "核發載明20%不法容積獎勵之建照（111建字9999號），不法多得18,463㎡面積，涉圖利121億餘元。", 
+                actor: "鼎越開發、沈慶京", 
+                detail: "至此，圖利京華城案之核心犯罪圖景全部完成。多得之面積等同於額外不法銷售坪數8656.93坪，市價驚人。",
+                ref: "事實欄 壹、二、㈤"
+            }
+        ];
+
+        // Canvas Setup
+        const canvas = document.getElementById('timelineCanvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+        
+        // Timeline View state
+        let scale = 1;
+        let activeFilter = 'all';
+        let hoveredIndex = -1;
+        let selectedIndex = -1;
+        let nodes = []; // Store drawn node positions for click detection
+        let pulseTime = 0; // Animation timer for spotlight pulse
+
+        // Setup sizes on load and resize
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+            drawTimeline();
+        }
+
+        // Color Palette for Event Categories
+        const colors = {
+            spotlight: { main: '#f59e0b', light: '#fef3c7', glow: 'rgba(245, 158, 11, 0.4)' }, // Amber
+            admin: { main: '#38bdf8', light: '#e0f2fe', glow: 'rgba(56, 189, 248, 0.2)' },     // Sky Blue
+            legal: { main: '#34d399', light: '#ecfdf5', glow: 'rgba(52, 211, 153, 0.2)' },     // Emerald Green
+            money: { main: '#f87171', light: '#fef2f2', glow: 'rgba(248, 113, 113, 0.3)' }      // Coral Red
+        };
+
+        // Draw the complete Timeline on Canvas
+        function drawTimeline() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            
+            // Clear Background
+            ctx.fillStyle = '#090d16'; // Extremely dark blue
+            ctx.fillRect(0, 0, w, h);
+
+            // Filter active events
+            const activeEvents = events.filter(e => activeFilter === 'all' || e.cat === activeFilter);
+            if (activeEvents.length === 0) return;
+
+            // Geometry setup (Vertical layout fits scrollable canvas best)
+            const padding = 60;
+            const startY = padding;
+            const endY = h - padding;
+            const stepY = activeEvents.length > 1 ? (endY - startY) / (activeEvents.length - 1) : 0;
+            const centerX = w * 0.35; // Put timeline line slightly on the left
+
+            // Draw central spine line
+            ctx.beginPath();
+            ctx.strokeStyle = '#1e293b'; // slate-800
+            ctx.lineWidth = 4;
+            ctx.moveTo(centerX, startY);
+            ctx.lineTo(centerX, endY);
+            ctx.stroke();
+
+            // Clear previously stored coordinates
+            nodes = [];
+
+            // Draw grid dates & events
+            activeEvents.forEach((event, i) => {
+                const nodeY = startY + (i * stepY);
+                const colorTheme = colors[event.cat] || colors.admin;
+                const isSpotlight = event.cat === 'spotlight';
+                const isHovered = (hoveredIndex === i);
+                const isSelected = (selectedIndex === i);
+
+                // Draw connecting horizontal line (pointing to detail card)
+                ctx.beginPath();
+                ctx.strokeStyle = isSelected ? colorTheme.main : '#1e293b';
+                ctx.lineWidth = isSelected ? 2 : 1;
+                ctx.setLineDash(isSelected ? [] : [4, 4]);
+                ctx.moveTo(centerX, nodeY);
+                ctx.lineTo(centerX + 60, nodeY);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset line dash
+
+                // Spotlight node extra animation loop
+                if (isSpotlight) {
+                    const radiusGlow = 14 + Math.sin(pulseTime * 0.08) * 4;
+                    ctx.beginPath();
+                    ctx.arc(centerX, nodeY, radiusGlow, 0, Math.PI * 2);
+                    ctx.fillStyle = colorTheme.glow;
+                    ctx.fill();
+                }
+
+                // Node Base Circle Glow
+                if (isHovered || isSelected) {
+                    ctx.beginPath();
+                    ctx.arc(centerX, nodeY, isSelected ? 18 : 14, 0, Math.PI * 2);
+                    ctx.fillStyle = colorTheme.glow;
+                    ctx.fill();
+                }
+
+                // Inner Solid Circle
+                ctx.beginPath();
+                ctx.arc(centerX, nodeY, isSelected ? 10 : 7, 0, Math.PI * 2);
+                ctx.fillStyle = colorTheme.main;
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Date Text on the Left of the node
+                ctx.font = isSelected ? '900 12px monospace' : 'bold 11px monospace';
+                ctx.fillStyle = isSelected ? '#ffffff' : '#94a3b8';
+                ctx.textAlign = 'right';
+                ctx.fillText(event.date, centerX - 18, nodeY + 4);
+
+                // Draw Event Short Title on the Right of the node
+                ctx.font = isSelected ? 'bold 13px Noto Sans TC' : '500 12px Noto Sans TC';
+                ctx.fillStyle = isSelected ? colorTheme.light : (isHovered ? '#f1f5f9' : '#cbd5e1');
+                ctx.textAlign = 'left';
+                
+                // Truncate title text to fit within canvas bounds
+                let displayTitle = event.title;
+                if (displayTitle.length > 15) {
+                    displayTitle = displayTitle.substring(0, 14) + '...';
+                }
+                ctx.fillText(displayTitle, centerX + 75, nodeY + 4);
+
+                // Store node info for mouse raycast
+                nodes.push({
+                    x: centerX,
+                    y: nodeY,
+                    r: 20, // generous hit area
+                    originalIndex: events.indexOf(event)
+                });
+            });
+        }
+
+        // Active filter changer
+        function filterCategory(cat) {
+            activeFilter = cat;
+            selectedIndex = -1; // reset select
+            
+            // UI Button Active State updates
+            const buttons = document.querySelectorAll('#filter-group button');
+            buttons.forEach(btn => {
+                btn.className = btn.className.replace('bg-slate-800 text-slate-100', 'bg-slate-900 text-slate-400');
+                btn.className = btn.className.replace('border-slate-700', 'border-transparent');
+            });
+
+            const activeBtn = document.getElementById('btn-' + cat);
+            if (activeBtn) {
+                activeBtn.className = activeBtn.className.replace('bg-slate-900 text-slate-400', 'bg-slate-800 text-slate-100');
+                activeBtn.className = activeBtn.className.replace('border-transparent', 'border-slate-700');
+            }
+
+            // Reset inspector to default placeholder
+            document.getElementById('inspector-placeholder').classList.remove('hidden');
+            document.getElementById('inspector-placeholder').classList.add('flex');
+            document.getElementById('inspector-content').classList.remove('flex');
+            document.getElementById('inspector-content').classList.add('hidden');
+
+            drawTimeline();
+        }
+
+        function resetCanvasView() {
+            activeFilter = 'all';
+            selectedIndex = -1;
+            filterCategory('all');
+        }
+
+        // Interactivity handling on Canvas
+        canvas.addEventListener('mousemove', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let lastHovered = hoveredIndex;
+            hoveredIndex = -1;
+            canvas.style.cursor = 'default';
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const dist = Math.hypot(mouseX - node.x, mouseY - node.y);
+                if (dist < node.r) {
+                    hoveredIndex = i;
+                    canvas.style.cursor = 'pointer';
+                    break;
+                }
+            }
+
+            if (lastHovered !== hoveredIndex) {
+                drawTimeline();
+            }
+        });
+
+        canvas.addEventListener('click', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const dist = Math.hypot(mouseX - node.x, mouseY - node.y);
+                if (dist < node.r) {
+                    selectedIndex = i;
+                    showEventDetails(node.originalIndex);
+                    drawTimeline();
+                    break;
+                }
+            }
+        });
+
+        // Show Event Details in Inspector Column
+        function showEventDetails(index) {
+            const event = events[index];
+            if (!event) return;
+
+            // Fill inspector elements
+            document.getElementById('ins-date').innerText = event.date;
+            document.getElementById('ins-title').innerText = event.title;
+            document.getElementById('ins-desc').innerText = event.desc;
+            document.getElementById('ins-detail').innerText = event.detail;
+            document.getElementById('ins-actor-tag').innerText = event.actor;
+            document.getElementById('ins-reference').innerText = event.ref;
+
+            // Badge Category logic
+            const catBadge = document.getElementById('ins-cat');
+            catBadge.innerText = getCategoryLabel(event.cat);
+            
+            // Clean dynamic colors
+            catBadge.className = "mt-2 inline-block text-[10px] font-bold px-2.5 py-1 rounded ";
+            if (event.cat === 'spotlight') catBadge.className += "bg-amber-500 text-slate-950";
+            if (event.cat === 'admin') catBadge.className += "bg-sky-500 text-slate-950";
+            if (event.cat === 'legal') catBadge.className += "bg-emerald-500 text-slate-950";
+            if (event.cat === 'money') catBadge.className += "bg-red-500 text-slate-950";
+
+            // Switch layouts from placeholder
+            document.getElementById('inspector-placeholder').classList.remove('flex');
+            document.getElementById('inspector-placeholder').classList.add('hidden');
+            document.getElementById('inspector-content').classList.remove('hidden');
+            document.getElementById('inspector-content').classList.add('flex');
+        }
+
+        function getCategoryLabel(cat) {
+            switch(cat) {
+                case 'spotlight': return '苗博雅焦點預警';
+                case 'admin': return '行政交辦與PM指派';
+                case 'legal': return '行政訴訟與糾正';
+                case 'money': return '金流與對價關係';
+                default: return '一般行政事證';
+            }
+        }
+
+        // Initialize Filter counts dynamically
+        function initCategoryCounts() {
+            document.getElementById('count-all').innerText = events.length;
+            document.getElementById('count-spotlight').innerText = events.filter(e => e.cat === 'spotlight').length;
+            document.getElementById('count-admin').innerText = events.filter(e => e.cat === 'admin').length;
+            document.getElementById('count-legal').innerText = events.filter(e => e.cat === 'legal').length;
+            document.getElementById('count-money').innerText = events.filter(e => e.cat === 'money').length;
+        }
+
+        // Pulse Animation loop
+        function animationLoop() {
+            pulseTime++;
+            // Only redraw active pulse when category spotlight or all is displayed
+            if (activeFilter === 'all' || activeFilter === 'spotlight') {
+                drawTimeline();
+            }
+            requestAnimationFrame(animationLoop);
+        }
+
+        // Initial setup calls
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        initCategoryCounts();
+        animationLoop();
+
+        // Autoload Miao Poya (index 12 in full array) into inspector on first start as highlight
+        setTimeout(() => {
+            const miaoIndex = events.findIndex(e => e.cat === 'spotlight');
+            if (miaoIndex !== -1) {
+                // Find visible filtered index
+                selectedIndex = miaoIndex;
+                showEventDetails(miaoIndex);
+                drawTimeline();
+            }
+        }, 300);
+
+    </script>
+</body>
+</html>
