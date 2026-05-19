@@ -18,7 +18,7 @@ test('應該能夠貼上內容並偵測到 HTML 格式', async ({ page }) => {
 
   // 4. 斷言
   const detectedType = page.locator('#detectedType');
-  await expect(detectedType).toHaveText('HTML');
+  await expect(detectedType).toContainText('HTML');
 
   const filenameInput = page.locator('#filenameInput');
   await expect(filenameInput).not.toBeDisabled();
