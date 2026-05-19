@@ -1,0 +1,16 @@
+{
+  "name": "Code to File",
+  "short_name": "檔案匯出",
+  "description": "貼上從 Canvas 取得的程式碼或文字內容，系統將自動分析並為您產生適合的檔名並提供下載。",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#f8fafc",
+  "icons": [
+    {
+      "src": "assets/favicon/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
