@@ -69,9 +69,9 @@
                         <div>
                             <label for="filenameInput" class="block text-xs font-medium text-slate-500 mb-1">儲存檔名 (可自行修改)</label>
                             <div class="relative">
-                                <input type="text" id="filenameInput" 
-                                    class="w-full pl-3 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono transition-shadow bg-slate-50 hover:bg-white" 
-                                    placeholder="untitled.txt" disabled>
+                                <textarea id="filenameInput" rows="2"
+                                    class="w-full pl-3 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono transition-shadow bg-slate-50 hover:bg-white resize-y" 
+                                    placeholder="untitled.txt" disabled></textarea>
                             </div>
                             <p class="text-[11px] text-slate-400 mt-1.5" id="autoUpdateHint">輸入內容後將自動產生檔名</p>
                         </div>
@@ -101,24 +101,44 @@
             const detectedTypeEl = document.getElementById('detectedType');
             const autoUpdateHint = document.getElementById('autoUpdateHint');
 
-            let isUserEditedFilename = false;
+            let isUserEditedFilename = localStorage.getItem('canvas_exporter_is_edited') === 'true';
 
             // 監聽檔名輸入框，如果使用者自己改了，就不再自動覆蓋，除非清空內容
             filenameInput.addEventListener('input', () => {
                 isUserEditedFilename = true;
+                localStorage.setItem('canvas_exporter_is_edited', 'true');
+                localStorage.setItem('canvas_exporter_filename', filenameInput.value);
                 autoUpdateHint.textContent = "已鎖定手動修改的檔名";
                 autoUpdateHint.classList.add('text-amber-500');
             });
 
+            // 頁面載入時，若有暫存內容則自動復原
+            const savedContent = localStorage.getItem('canvas_exporter_content');
+            if (savedContent) {
+                contentInput.value = savedContent;
+                if (isUserEditedFilename) {
+                    filenameInput.value = localStorage.getItem('canvas_exporter_filename') || '';
+                    autoUpdateHint.textContent = "已鎖定手動修改的檔名";
+                    autoUpdateHint.classList.add('text-amber-500');
+                }
+                // 延遲觸發以確保事件綁定已完成
+                setTimeout(() => contentInput.dispatchEvent(new Event('input')), 0);
+            }
+
             // 清空按鈕邏輯
             clearBtn.addEventListener('click', () => {
                 contentInput.value = '';
+                localStorage.removeItem('canvas_exporter_content');
+                localStorage.removeItem('canvas_exporter_filename');
+                localStorage.setItem('canvas_exporter_is_edited', 'false');
                 contentInput.dispatchEvent(new Event('input'));
             });
 
             // 核心邏輯：分析內容並產生檔名
             contentInput.addEventListener('input', () => {
                 const content = contentInput.value;
+                localStorage.setItem('canvas_exporter_content', content);
+                
                 const isEmpty = content.trim() === '';
                 
                 downloadBtn.disabled = isEmpty;
@@ -130,6 +150,8 @@
                     detectedTypeEl.textContent = '尚未偵測';
                     detectedTypeEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200';
                     isUserEditedFilename = false;
+                    localStorage.setItem('canvas_exporter_is_edited', 'false');
+                    localStorage.removeItem('canvas_exporter_filename');
                     autoUpdateHint.textContent = "輸入內容後將自動產生檔名";
                     autoUpdateHint.classList.remove('text-amber-500');
                     return;
@@ -231,7 +253,9 @@
                 const content = contentInput.value;
                 if (!content) return;
 
-                const filename = filenameInput.value.trim() || 'untitled.txt';
+                // 取得檔名並移除所有換行字元
+                let filename = filenameInput.value.replace(/[\r\n]+/g, '').trim();
+                if (!filename) filename = 'untitled.txt';
                 
                 // 建立 Blob 物件
                 const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
