@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,12 +18,23 @@
 
     <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
         <!-- 標頭 -->
-        <header class="mb-8 text-center sm:text-left">
-            <h1 class="text-3xl font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                檔案匯出工具
-            </h1>
-            <p class="text-slate-500 mt-2">貼上從 Canvas 取得的程式碼或文字內容，系統將自動分析並為您產生適合的檔名。</p>
+        <header class="mb-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div class="text-center sm:text-left">
+                    <h1 class="text-3xl font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        <span data-i18n="header.title">Code to File Exporter</span>
+                    </h1>
+                    <p class="text-slate-500 mt-2" data-i18n="header.subtitle">Paste code or text copied from Canvas, and this tool will auto-detect a suitable filename for download.</p>
+                </div>
+                <div class="flex justify-center sm:justify-end">
+                    <label for="language-select" class="text-xs font-medium text-slate-500 mr-2 mt-2" data-i18n="language.label">Language</label>
+                    <select id="language-select" class="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="en" data-i18n="language.options.en">English</option>
+                        <option value="zh-TW" data-i18n="language.options.zh-TW">繁體中文</option>
+                    </select>
+                </div>
+            </div>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -31,39 +42,41 @@
             <!-- 左側：內容輸入區 -->
             <div class="lg:col-span-2 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="bg-slate-100 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
-                    <span class="text-sm font-medium text-slate-600">檔案內容 (貼上於此)</span>
+                    <span class="text-sm font-medium text-slate-600" data-i18n="editor.title">File Content (Paste Here)</span>
                     <button id="clearBtn" class="text-xs text-slate-500 hover:text-red-600 transition-colors flex items-center gap-1 hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                        清空
+                        <span id="clearBtnText" data-i18n="buttons.clear">Clear</span>
                     </button>
                 </div>
                 <textarea id="contentInput" 
                     class="w-full flex-grow min-h-[400px] p-4 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-y" 
-                    placeholder="請在此貼上 HTML、Markdown、JSON 或任何程式碼..."></textarea>
+                    data-i18n-placeholder="editor.placeholder"
+                    placeholder="Paste HTML, Markdown, JSON, or any code here..."></textarea>
             </div>
 
             <!-- 右側：設定與下載區 -->
             <div class="flex flex-col gap-6">
                 <!-- 分析結果卡片 -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4">檔案設定</h2>
+                    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4" data-i18n="settings.title">File Settings</h2>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">自動偵測格式</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1" data-i18n="settings.detectedType">Detected Format</label>
                             <div id="detectedType" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200">
-                                尚未偵測
+                                <span data-i18n="types.unknown">Not detected yet</span>
                             </div>
                         </div>
 
                         <div>
-                            <label for="filenameInput" class="block text-xs font-medium text-slate-500 mb-1">儲存檔名 (可自行修改)</label>
+                            <label for="filenameInput" class="block text-xs font-medium text-slate-500 mb-1" data-i18n="settings.filenameLabel">Filename (editable)</label>
                             <div class="relative">
                                 <textarea id="filenameInput" rows="2"
                                     class="w-full pl-3 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono transition-shadow bg-slate-50 hover:bg-white resize-y" 
+                                    data-i18n-placeholder="settings.filenamePlaceholder"
                                     placeholder="untitled.txt" disabled></textarea>
                             </div>
-                            <p class="text-[11px] text-slate-400 mt-1.5" id="autoUpdateHint">輸入內容後將自動產生檔名</p>
+                            <p class="text-[11px] text-slate-400 mt-1.5" id="autoUpdateHint" data-i18n="hints.autoFilename">Filename will be generated after you input content</p>
                         </div>
                     </div>
                 </div>
@@ -73,16 +86,16 @@
                     <button id="downloadBtn" disabled
                         class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all active:scale-[0.98]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                        下載檔案
+                        <span id="downloadBtnLabel" data-i18n="buttons.download">Download File</span>
                     </button>
-                    <p class="text-xs text-center text-slate-500 mt-3">所有處理皆在您的瀏覽器中完成，不會上傳任何資料。</p>
+                    <p class="text-xs text-center text-slate-500 mt-3" data-i18n="footer.localOnly">All processing happens in your browser. No data is uploaded.</p>
                 </div>
      </div>
 
         </main>
     </div>
 
-    <script src="scripts/script.js"></script>
+    <script type="module" src="scripts/script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
