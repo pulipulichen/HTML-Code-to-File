@@ -1,0 +1,9 @@
+{
+  "browser": true,
+  "devel": true,
+  "esversion": 8,
+  "for": true,
+  "maxerr": 200,
+  "single": true,
+  "this": true
+}

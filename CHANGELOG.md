@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [0.0.2]
 
+### Added
+
+- Added `.jslintrc` with JSLint baseline options and `esversion: 8` support for modern JavaScript syntax.
+
 ### Changed
 
 - Updated `index.html` title and PWA-related metadata.
