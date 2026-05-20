@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - Updated Playwright assertion in `e2e/test.spec.js` to match localized UI text for detected HTML type.
 - Resolved Playwright reporter output conflict by separating test artifacts into `test-results/`.
 - Aligned Docker test runner output path in `Dockerfile.test` with Playwright config.
+- Stripped wrapping Markdown code fences (` ```html ... ``` `) from editor content before download so exported files contain raw HTML only.
 
 ## [0.0.1]
 

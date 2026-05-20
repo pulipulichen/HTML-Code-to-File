@@ -105,6 +105,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
+    function unwrapHtmlCodeFence(content) {
+        const trimmedContent = content.trim();
+        const startsWithHtmlFence = /^```html\s*/i.test(trimmedContent);
+        const endsWithFence = /```$/.test(trimmedContent);
+
+        if (!startsWithHtmlFence || !endsWithFence) {
+            return content;
+        }
+
+        return trimmedContent
+            .replace(/^```html[^\n\r]*[\r\n]?/i, '')
+            .replace(/[\r\n]?```$/, '');
+    }
+
     filenameInput.addEventListener('input', () => {
         isUserEditedFilename = true;
         persistFilenameEditedFlag(true);
@@ -126,7 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        downloadTextContent(content, filenameInput.value);
+        const contentForDownload = unwrapHtmlCodeFence(content);
+        if (contentForDownload !== content) {
+            contentInput.value = contentForDownload;
+            syncContentState();
+        }
+
+        downloadTextContent(contentForDownload, filenameInput.value);
         showDownloadSuccessFeedback();
     });
 
