@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Refactored filename input from a single-line input to a textarea.
 - Enhanced `localStorage` handling for user edit state and content persistence.
+- Split `scripts/script.js` by business logic into dedicated modules for content detection, persistence, and file download while keeping the entry script focused on orchestration.
+- Kept runtime UI text updates aligned with i18n events after the refactor, including detected type, filename hint, and download button label states.
 
 ### Fixed
 
